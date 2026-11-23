@@ -1,0 +1,1950 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penjana Soalan Ujian Prestasi (UPSA) - Matematik Tahun 6 KSSR</title>
+    
+    <!-- Tailwind CSS untuk antaramuka moden dan responsif -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Pustaka html2pdf untuk muat turun PDF terus tanpa dialog cetak -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <!-- Fon Google: Inter untuk UI & Tinos (serupa Times New Roman) untuk Kertas Peperiksaan Rasmi -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Tinos:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        /* Konfigurasi asas tipografi */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #eef2f6;
+            color: #1e293b;
+        }
+
+        /* Fon rasmi kertas peperiksaan Malaysia (Times New Roman / Tinos) */
+        .exam-font {
+            font-family: 'Tinos', 'Times New Roman', Times, serif;
+            color: #000000;
+        }
+
+        /* Reka bentuk helaian kertas A4 sebenar (210mm x 297mm) */
+        .a4-sheet {
+            width: 210mm;
+            min-height: 297mm;
+            height: 297mm;
+            background: #ffffff;
+            margin: 0 auto 24px auto;
+            padding: 14mm 16mm 14mm 16mm;
+            box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.14), 0 4px 10px -2px rgba(15, 23, 42, 0.06);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+            overflow: hidden;
+            page-break-after: always;
+            break-after: page;
+        }
+
+        .a4-sheet:last-child {
+            page-break-after: auto;
+            break-after: auto;
+        }
+
+        /* Helaian skema jawapan boleh memanjang jika perlu tetapi kekal kemas */
+        .a4-sheet-scheme {
+            width: 210mm;
+            min-height: 297mm;
+            background: #ffffff;
+            margin: 0 auto 24px auto;
+            padding: 14mm 16mm 14mm 16mm;
+            box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.14), 0 4px 10px -2px rgba(15, 23, 42, 0.06);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+            page-break-after: always;
+            break-after: page;
+        }
+
+        /* Garisan ruang kerja murid pada kertas peperiksaan */
+        .work-space {
+            border-bottom: 1px dotted #cbd5e1;
+            min-height: 36mm;
+            position: relative;
+        }
+
+        /* Jadual peperiksaan rasmi */
+        .exam-table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 11.5pt;
+        }
+        .exam-table th, .exam-table td {
+            border: 1.2px solid #000000;
+            padding: 6px 10px;
+            text-align: center;
+        }
+        .exam-table th {
+            background-color: #f8fafc;
+            font-weight: bold;
+        }
+
+        /* Penyesuaian paparan skrin kecil supaya helaian A4 mudah dibaca */
+        .paper-viewport {
+            width: 100%;
+            overflow-x: auto;
+            padding: 16px 8px 48px 8px;
+        }
+
+        @media screen and (max-width: 840px) {
+            .paper-scale-wrapper {
+                transform-origin: top left;
+            }
+        }
+
+        /* Peraturan cetakan rasmi A4 */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+            body {
+                background: #ffffff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .paper-viewport {
+                padding: 0 !important;
+                overflow: visible !important;
+            }
+            .paper-scale-wrapper {
+                transform: none !important;
+                width: 100% !important;
+            }
+            .a4-sheet, .a4-sheet-scheme {
+                margin: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+                width: 210mm !important;
+                min-height: 297mm !important;
+                height: 297mm !important;
+                page-break-after: always !important;
+                break-after: page !important;
+            }
+            .a4-sheet:last-child, .a4-sheet-scheme:last-child {
+                page-break-after: auto !important;
+                break-after: auto !important;
+            }
+            .work-space {
+                border-bottom: none !important;
+            }
+        }
+
+        /* Animasi halus untuk penjanaan set baharu */
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-paper {
+            animation: fadeSlideIn 0.35s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- ==================== PANEL KAWALAN UTAMA (TIDAK DICETAK) ==================== -->
+    <header class="no-print sticky top-0 z-40 bg-slate-900 text-white shadow-lg border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5">
+            <!-- Baris Atas: Jenama Sistem & Status Kawalan Kualiti -->
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pb-3 border-b border-slate-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-md shrink-0">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h1 class="text-base sm:text-lg font-bold tracking-tight text-white">Sistem Penjana Kertas Ujian Prestasi (UPSA)</h1>
+                            <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Standard KSSR KPM</span>
+                        </div>
+                        <p class="text-xs text-slate-400">Format Rasmi Ujian Pertengahan Sesi Akademik • 50 Markah (Bahagian A: 26m | Bahagian B: 24m)</p>
+                    </div>
+                </div>
+
+                <!-- Lencana Status Semakan Kualiti Automatik -->
+                <div id="qaBadge" class="flex items-center gap-2 bg-slate-800/90 border border-slate-700 px-3 py-1.5 rounded-xl text-xs">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span id="qaStatusText" class="text-slate-200 font-medium">Semakan Kualiti: Lulus (21 Kemahiran Unik • 50/50 Markah)</span>
+                </div>
+            </div>
+
+            <!-- Baris Kawalan & Butang Tindakan -->
+            <div class="pt-3 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                <!-- Pilihan Mata Pelajaran, Tahun & Kod Set -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 flex-1 max-w-2xl">
+                    <div>
+                        <label for="subjectSelect" class="block text-[11px] font-medium text-slate-400 mb-1">Mata Pelajaran</label>
+                        <select id="subjectSelect" class="w-full bg-slate-800 border border-slate-700 text-white text-xs sm:text-sm rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="MATEMATIK" selected>Matematik (KSSR Semakan)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="yearSelect" class="block text-[11px] font-medium text-slate-400 mb-1">Tahun / Peperiksaan</label>
+                        <select id="yearSelect" class="w-full bg-slate-800 border border-slate-700 text-white text-xs sm:text-sm rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="TAHUN 6 - UPSA" selected>Tahun 6 (UPSA / Pertengahan Tahun)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-medium text-slate-400 mb-1">Kod Set Semasa</label>
+                        <div class="bg-slate-800/70 border border-slate-700/80 text-emerald-300 font-mono text-xs sm:text-sm rounded-xl px-3 py-2 flex items-center justify-between">
+                            <span id="setCodeDisplay">SET-UPSA-001</span>
+                            <span class="text-[10px] text-slate-400">1j 15m</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Butang-Butang Utama -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <button id="btnGenerate" type="button" onclick="generateNewPaperSet(false)" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] text-white font-semibold text-xs sm:text-sm shadow-md transition cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        <span>GENERATE SOALAN</span>
+                    </button>
+
+                    <button id="btnGenerateNew" type="button" onclick="generateNewPaperSet(true)" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-[0.99] text-white font-semibold text-xs sm:text-sm shadow-md transition cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        <span>GENERATE SET BAHARU</span>
+                    </button>
+
+                    <button id="btnToggleScheme" type="button" onclick="toggleAnswerScheme()" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-[0.99] text-slate-950 font-semibold text-xs sm:text-sm shadow-md transition cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                        </svg>
+                        <span id="btnSchemeText">PAPAR SKEMA JAWAPAN</span>
+                    </button>
+
+                    <!-- Menu Muat Turun PDF Berasingan atau Lengkap -->
+                    <div class="relative inline-block">
+                        <button id="btnDownloadMenu" type="button" onclick="togglePdfDropdown()" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 active:scale-[0.99] text-white font-semibold text-xs sm:text-sm shadow-md transition cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            <span>DOWNLOAD PDF</span>
+                            <svg class="w-3.5 h-3.5 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div id="pdfDropdown" class="hidden absolute right-0 mt-2 w-72 rounded-xl bg-white text-slate-800 shadow-2xl border border-slate-200 py-1.5 z-50">
+                            <div class="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 border-b border-slate-100">Pilih Format Muat Turun PDF (A4)</div>
+                            <button type="button" onclick="downloadPdfOption('full')" class="w-full text-left px-3.5 py-2.5 text-xs hover:bg-slate-50 flex items-start gap-2.5 transition cursor-pointer">
+                                <span class="mt-0.5 w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                                <div>
+                                    <div class="font-bold text-slate-900">Kertas Soalan + Skema Jawapan</div>
+                                    <div class="text-slate-500">Lengkap dengan jalan kerja di halaman akhir</div>
+                                </div>
+                            </button>
+                            <button type="button" onclick="downloadPdfOption('questions')" class="w-full text-left px-3.5 py-2.5 text-xs hover:bg-slate-50 flex items-start gap-2.5 transition cursor-pointer border-t border-slate-100">
+                                <span class="mt-0.5 w-2 h-2 rounded-full bg-sky-500 shrink-0"></span>
+                                <div>
+                                    <div class="font-bold text-slate-900">Kertas Soalan Sahaja (Halaman 1–9)</div>
+                                    <div class="text-slate-500">Sedia untuk diedarkan kepada murid</div>
+                                </div>
+                            </button>
+                            <button type="button" onclick="downloadPdfOption('scheme')" class="w-full text-left px-3.5 py-2.5 text-xs hover:bg-slate-50 flex items-start gap-2.5 transition cursor-pointer border-t border-slate-100">
+                                <span class="mt-0.5 w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
+                                <div>
+                                    <div class="font-bold text-slate-900">Skema Jawapan Sahaja</div>
+                                    <div class="text-slate-500">Jawapan akhir & langkah pengiraan guru</div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button id="btnPrint" type="button" onclick="window.print()" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 active:scale-[0.99] text-white font-semibold text-xs sm:text-sm shadow-md border border-slate-600 transition cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                        </svg>
+                        <span>PRINT</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Bar Info Ringkas & Panduan Navigasi (Tidak Dicetak) -->
+    <div class="no-print bg-white border-b border-slate-200 px-4 py-2 text-xs text-slate-600">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+                <span class="font-semibold text-slate-800">Struktur Kertas:</span>
+                <span>Halaman 1 (Muka Depan Rasmi)</span>
+                <span>•</span>
+                <span>Halaman 2–5 (Bahagian A: 13 Soalan / 26 Markah)</span>
+                <span>•</span>
+                <span>Halaman 6–9 (Bahagian B: 2 Soalan Berstruktur / 24 Markah)</span>
+                <span>•</span>
+                <span class="text-emerald-700 font-semibold">Halaman 10–11 (Skema Jawapan & Langkah Kerja)</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="scrollToScheme()" class="text-indigo-600 hover:text-indigo-800 font-semibold underline cursor-pointer">Lompat Terus ke Jawapan ↓</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifikasi Toast (Menggantikan alert/confirm sepenuhnya) -->
+    <div id="toastNotification" class="no-print fixed bottom-5 right-5 z-50 hidden transform transition-all duration-300">
+        <div class="bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700 flex items-center gap-3 max-w-sm">
+            <div id="toastIcon" class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <p id="toastMessage" class="text-xs sm:text-sm font-medium leading-snug"></p>
+        </div>
+    </div>
+
+    <!-- ==================== KAWASAN PAPARAN KERTAS PEPERIKSAAN A4 ==================== -->
+    <main class="paper-viewport flex-1">
+        <div id="paperScaleWrapper" class="paper-scale-wrapper">
+            <div id="examPaperContainer" class="exam-font">
+                <!-- Helaian A4 (Halaman 1 hingga 9 + Halaman Skema Jawapan) akan dijana di sini -->
+            </div>
+        </div>
+    </main>
+
+    <script>
+        /**
+         * ============================================================================
+         * SISTEM PENJANA SOALAN UJIAN PRESTASI (UPSA) MATEMATIK TAHUN 6 KSSR
+         * ============================================================================
+         * Dibangunkan berpandukan struktur sebenar kertas Pentaksiran Pertengahan Tahun
+         * Matematik Tahun 6 KSSR:
+         * - Muka Depan Rasmi Generik (tanpa identiti/logo sekolah atau tahun khusus)
+         * - Bahagian A: 13 Soalan (2 markah setiap satu = 26 markah)
+         * - Bahagian B: 2 Soalan Berstruktur (12 markah setiap satu = 24 markah)
+         * - Jumlah Keseluruhan: 50 Markah
+         * - Penapis Konsep Unik: 21 kemahiran berbeza tanpa pertindihan topik
+         * - Skema Jawapan & Langkah Pengiraan terperinci di akhir muka surat
+         */
+
+        // Keadaan global aplikasi
+        let currentSetCounter = 1;
+        let currentExamData = null;
+        let isSchemeVisible = true; // Secara lalai dimasukkan terus di akhir muka surat seperti diminta
+
+        // ============================================================================
+        // UTILITI MATEMATIK TEPAT (SIFAR RALAT PENGIRAAN)
+        // ============================================================================
+
+        function gcd(a, b) {
+            a = Math.abs(Math.round(a));
+            b = Math.abs(Math.round(b));
+            while (b !== 0) {
+                let t = b;
+                b = a % b;
+                a = t;
+            }
+            return a || 1;
+        }
+
+        function simplifyFraction(num, den) {
+            const divisor = gcd(num, den);
+            return { num: num / divisor, den: den / divisor };
+        }
+
+        function formatInt(n) {
+            // Format nombor bulat standard KPM Malaysia dengan jarak ribuan (cth: 2 500 000)
+            return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+        }
+
+        function formatDec(n, maxDecimals = 4) {
+            // Elak ralat titik terapung JavaScript seperti 1.6800000000000002
+            const fixed = Number(n.toFixed(maxDecimals));
+            return fixed.toString();
+        }
+
+        function renderFracHTML(num, den) {
+            return `<span class="inline-flex flex-col items-center align-middle mx-1 leading-none" style="vertical-align: middle; font-size: 0.88em;">
+                <span class="border-b border-black px-1 pb-0.5">${num}</span>
+                <span class="px-1 pt-0.5">${den}</span>
+            </span>`;
+        }
+
+        function renderMixedHTML(whole, num, den) {
+            if (num === 0) return `<span>${whole}</span>`;
+            if (whole === 0) return renderFracHTML(num, den);
+            return `<span class="inline-flex items-center align-middle"><span>${whole}</span>${renderFracHTML(num, den)}</span>`;
+        }
+
+        function randPick(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function shuffleArray(arr) {
+            const copy = [...arr];
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy;
+        }
+
+        // ============================================================================
+        // BANK PENJANA SOALAN BAHAGIAN A (13 KEMAHIRAN UNIK KSSR TAHUN 6)
+        // ============================================================================
+        // Setiap penjana mengembalikan variasi corak soalan yang berbeza daripada PDF asal
+        // tetapi mengekalkan standard pembelajaran, aras kesukaran dan 2 markah setiap satu.
+
+        const bahagianAGenerators = [
+            // A1: Nilai Nombor dalam Juta -> Perpuluhan Juta & Pecahan Juta (Pelbagai visual)
+            function genA1() {
+                const options = [
+                    { val: 1250000, dec: '1.25', whole: 1, num: 1, den: 4 },
+                    { val: 3750000, dec: '3.75', whole: 3, num: 3, den: 4 },
+                    { val: 4200000, dec: '4.2', whole: 4, num: 1, den: 5 },
+                    { val: 6500000, dec: '6.5', whole: 6, num: 1, den: 2 },
+                    { val: 8400000, dec: '8.4', whole: 8, num: 2, den: 5 },
+                    { val: 5600000, dec: '5.6', whole: 5, num: 3, den: 5 },
+                    { val: 2125000, dec: '2.125', whole: 2, num: 1, den: 8 },
+                    { val: 4875000, dec: '4.875', whole: 4, num: 7, den: 8 }
+                ];
+                const item = randPick(options);
+                const visualType = randPick(['kad', 'paparan', 'abakus']);
+                let visualHtml = '';
+                let introText = '';
+
+                if (visualType === 'kad') {
+                    introText = 'Rajah 1 menunjukkan sekeping kad nombor.';
+                    visualHtml = `
+                        <div class="my-2.5 flex flex-col items-center">
+                            <div class="border-2 border-black px-8 py-2.5 font-bold text-lg tracking-wider bg-white">
+                                ${formatInt(item.val)}
+                            </div>
+                            <div class="text-xs font-bold mt-1">Rajah 1</div>
+                        </div>`;
+                } else if (visualType === 'paparan') {
+                    introText = 'Rajah 1 menunjukkan satu paparan jumlah tontonan dalam satu kempen pendidikan digital.';
+                    visualHtml = `
+                        <div class="my-2.5 flex flex-col items-center">
+                            <div class="border-2 border-black rounded-md px-6 py-2 bg-slate-50 text-center">
+                                <div class="text-[10pt] uppercase tracking-widest border-b border-black pb-0.5 mb-1">Jumlah Tontonan</div>
+                                <div class="font-bold text-lg tracking-widest">${formatInt(item.val)}</div>
+                            </div>
+                            <div class="text-xs font-bold mt-1">Rajah 1</div>
+                        </div>`;
+                } else {
+                    introText = 'Rajah 1 menunjukkan satu nilai bilangan penduduk yang direkodkan dalam satu bancian.';
+                    visualHtml = `
+                        <div class="my-2.5 flex flex-col items-center">
+                            <table class="border-collapse border border-black text-center text-sm">
+                                <tr class="bg-slate-100 font-bold">
+                                    <td class="border border-black px-2 py-1">Juta</td>
+                                    <td class="border border-black px-2 py-1">Ratus Ribu</td>
+                                    <td class="border border-black px-2 py-1">Puluh Ribu</td>
+                                    <td class="border border-black px-2 py-1">Ribu</td>
+                                    <td class="border border-black px-2 py-1">Ratus</td>
+                                    <td class="border border-black px-2 py-1">Puluh</td>
+                                    <td class="border border-black px-2 py-1">Sa</td>
+                                </tr>
+                                <tr class="font-bold text-base">
+                                    ${item.val.toString().split('').map(d => `<td class="border border-black px-2.5 py-1">${d}</td>`).join('')}
+                                </tr>
+                            </table>
+                            <div class="text-xs font-bold mt-1">Rajah 1</div>
+                        </div>`;
+                }
+
+                const htmlPrompt = `
+                    <div>${introText}</div>
+                    ${visualHtml}
+                    <div class="ml-2 space-y-1.5 mt-1">
+                        <div>(a) Tulis nombor tersebut dalam perpuluhan juta.</div>
+                        <div>(b) Tukarkan nombor pada Rajah 1 kepada pecahan juta.</div>
+                    </div>
+                `;
+
+                return {
+                    topicCode: 'KSSR_1.1.3_NOMBOR_JUTA',
+                    topicName: 'Menukar Nombor Bulat kepada Perpuluhan & Pecahan Juta',
+                    marks: 2,
+                    htmlPrompt,
+                    answerFinal: `(a) ${item.dec} juta  |  (b) ${item.whole} ${item.num}/${item.den} juta`,
+                    steps: [
+                        `Nilai nombor pada Rajah 1 = ${formatInt(item.val)}`,
+                        `(a) Bahagi dengan 1 000 000: ${formatInt(item.val)} ÷ 1 000 000 = ${item.dec} juta [1 markah]`,
+                        `(b) Tukar bahagian perpuluhan kepada pecahan termudah: ${item.dec} juta = ${item.whole} ${item.num}/${item.den} juta [1 markah]`
+                    ]
+                };
+            },
+
+            // A2: Operasi Bergabung Pecahan Juta & Nombor Bulat (Tolak / Tambah)
+            function genA2() {
+                const scenarios = [
+                    { whole: 6, num: 1, den: 4, sub: 2895000 },
+                    { whole: 8, num: 3, den: 5, sub: 4120000 },
+                    { whole: 9, num: 1, den: 2, sub: 5675000 },
+                    { whole: 5, num: 3, den: 4, sub: 1980000 },
+                    { whole: 4, num: 2, den: 5, sub: 1755000 },
+                    { whole: 7, num: 3, den: 10, sub: 3480000 }
+                ];
+                const s = randPick(scenarios);
+                const fracInWhole = Math.round((s.whole + s.num / s.den) * 1000000);
+                const mode = randPick(['tolak', 'cari_anu']);
+
+                if (mode === 'tolak') {
+                    const ans = fracInWhole - s.sub;
+                    return {
+                        topicCode: 'KSSR_1.2.1_OPERASI_PECAHAN_JUTA',
+                        topicName: 'Operasi Melibatkan Pecahan Juta dan Nombor Bulat',
+                        marks: 2,
+                        htmlPrompt: `<div>Hitung nilai bagi ${renderMixedHTML(s.whole, s.num, s.den)} juta &minus; ${formatInt(s.sub)}.</div>`,
+                        answerFinal: formatInt(ans),
+                        steps: [
+                            `Tukarkan ${s.whole} ${s.num}/${s.den} juta kepada nombor bulat: (${s.whole} + ${s.num}/${s.den}) × 1 000 000 = ${formatInt(fracInWhole)} [1 markah]`,
+                            `Tolakkan: ${formatInt(fracInWhole)} − ${formatInt(s.sub)} = ${formatInt(ans)} [1 markah]`
+                        ]
+                    };
+                } else {
+                    const extra = randPick([1250000, 1500000, 2100000]);
+                    const total = fracInWhole + extra;
+                    return {
+                        topicCode: 'KSSR_1.2.1_OPERASI_PECAHAN_JUTA',
+                        topicName: 'Operasi Melibatkan Pecahan Juta dan Nombor Bulat',
+                        marks: 2,
+                        htmlPrompt: `<div>${renderMixedHTML(s.whole, s.num, s.den)} juta + ${formatInt(extra)} = </div>`,
+                        answerFinal: formatInt(total),
+                        steps: [
+                            `Tukarkan ${s.whole} ${s.num}/${s.den} juta kepada nombor bulat = ${formatInt(fracInWhole)} [1 markah]`,
+                            `Tambahkan: ${formatInt(fracInWhole)} + ${formatInt(extra)} = ${formatInt(total)} [1 markah]`
+                        ]
+                    };
+                }
+            },
+
+            // A3: Operasi Bergabung Perpuluhan Juta & Darab/Bahagi Nombor Bulat (Tertib Operasi)
+            function genA3() {
+                const cases = [
+                    { dec: 2.45, mult: 650000, k: 4, op: '+' },
+                    { dec: 1.85, mult: 720000, k: 5, op: '+' },
+                    { dec: 6.4, mult: 450000, k: 6, op: '−' },
+                    { dec: 5.12, mult: 380000, k: 4, op: '−' },
+                    { dec: 1.75, mult: 950000, k: 3, op: '+' }
+                ];
+                const c = randPick(cases);
+                const decWhole = Math.round(c.dec * 1000000);
+                const prod = c.mult * c.k;
+                const ans = c.op === '+' ? decWhole + prod : decWhole - prod;
+
+                return {
+                    topicCode: 'KSSR_1.2.1_TERTIB_OPERASI_JUTA',
+                    topicName: 'Operasi Bergabung Perpuluhan Juta dan Darab',
+                    marks: 2,
+                    htmlPrompt: `<div>Selesaikan: &nbsp; ${c.dec} juta ${c.op} ${formatInt(c.mult)} &times; ${c.k} = </div>`,
+                    answerFinal: formatInt(ans),
+                    steps: [
+                        `Selesaikan operasi darab dahulu mengikut tertib operasi: ${formatInt(c.mult)} × ${c.k} = ${formatInt(prod)} [1 markah]`,
+                        `Tukarkan ${c.dec} juta = ${formatInt(decWhole)}`,
+                        `Selesaikan operasi ${c.op === '+' ? 'tambah' : 'tolak'}: ${formatInt(decWhole)} ${c.op} ${formatInt(prod)} = ${formatInt(ans)} [1 markah]`
+                    ]
+                };
+            },
+
+            // A4: Operasi Tambah dan Tolak Melibatkan Peratus Melebihi 100%
+            function genA4() {
+                const sets = [
+                    { a: 750, b: 185, c: 65, op1: '−', op2: '+' },
+                    { a: 620, b: 145, c: 90, op1: '+', op2: '−' },
+                    { a: 840, b: 275, c: 58, op1: '−', op2: '+' },
+                    { a: 530, b: 290, c: 115, op1: '+', op2: '−' },
+                    { a: 950, b: 365, c: 84, op1: '−', op2: '+' }
+                ];
+                const s = randPick(sets);
+                const step1 = s.op1 === '−' ? s.a - s.b : s.a + s.b;
+                const ans = s.op2 === '+' ? step1 + s.c : step1 - s.c;
+
+                return {
+                    topicCode: 'KSSR_2.3.1_OPERASI_PERATUS',
+                    topicName: 'Operasi Tambah dan Tolak Peratusan Melebihi 100%',
+                    marks: 2,
+                    htmlPrompt: `<div>Hitung: &nbsp; ${s.a}% ${s.op1} ${s.b}% ${s.op2} ${s.c}% = </div>`,
+                    answerFinal: `${ans}%`,
+                    steps: [
+                        `Langkah 1 (dari kiri ke kanan): ${s.a}% ${s.op1} ${s.b}% = ${step1}% [1 markah]`,
+                        `Langkah 2: ${step1}% ${s.op2} ${s.c}% = ${ans}% [1 markah]`
+                    ]
+                };
+            },
+
+            // A5: Nilai Peratusan Melebihi 100% daripada Suatu Kuantiti (Masa / Isi Padu / Jisim / Wang)
+            function genA5() {
+                const items = [
+                    { pct: 350, qty: 40, unit: 'minit', label: 'masa' },
+                    { pct: 450, qty: 60, unit: 'saat', label: 'tempoh masa' },
+                    { pct: 240, qty: 25, unit: 'kg', label: 'jisim' },
+                    { pct: 600, qty: 35, unit: 'ml', label: 'isi padu' },
+                    { pct: 175, qty: 80, unit: 'sen', label: 'nilai' },
+                    { pct: 320, qty: 50, unit: 'cm', label: 'panjang' }
+                ];
+                const it = randPick(items);
+                const ans = (it.pct / 100) * it.qty;
+
+                return {
+                    topicCode: 'KSSR_2.3.2_KUANTITI_DARIPADA_PERATUS',
+                    topicName: 'Menentukan Kuantiti daripada Peratusan Melebihi 100%',
+                    marks: 2,
+                    htmlPrompt: `<div>Hitung ${it.label} bagi ${it.pct}% daripada ${it.qty} ${it.unit}.</div>`,
+                    answerFinal: `${formatDec(ans)} ${it.unit}`,
+                    steps: [
+                        `Tuliskan ayat matematik: (${it.pct} / 100) × ${it.qty} ${it.unit} [1 markah]`,
+                        `Darab dan bahagikan: (${it.pct} × ${it.qty}) ÷ 100 = ${it.pct * it.qty} ÷ 100 = ${formatDec(ans)} ${it.unit} [1 markah]`
+                    ]
+                };
+            },
+
+            // A6: Pendaraban Nombor Perpuluhan dengan Kuasa 10 atau Nombor Bulat
+            function genA6() {
+                const cases = [
+                    { a: 48.75, b: 100, unit: '' },
+                    { a: 6.308, b: 1000, unit: '' },
+                    { a: 19.4, b: 100, unit: '' },
+                    { a: 7.25, b: 12, unit: 'm' },
+                    { a: 14.6, b: 15, unit: 'kg' }
+                ];
+                const c = randPick(cases);
+                const ans = Number((c.a * c.b).toFixed(4));
+                const unitStr = c.unit ? ` ${c.unit}` : '';
+
+                return {
+                    topicCode: 'KSSR_2.2.1_DARAB_PERPULUHAN',
+                    topicName: 'Pendaraban Nombor Perpuluhan',
+                    marks: 2,
+                    htmlPrompt: `<div>Kira hasil darab bagi ${c.a}${unitStr} &times; ${c.b}.</div>`,
+                    answerFinal: `${formatDec(ans)}${unitStr}`,
+                    steps: [
+                        `Susun pengiraan darab perpuluhan: ${c.a} × ${c.b} [1 markah]`,
+                        `Letakkan titik perpuluhan pada kedudukan yang tepat = ${formatDec(ans)}${unitStr} [1 markah]`
+                    ]
+                };
+            },
+
+            // A7: Pembahagian Nombor Perpuluhan dengan Nombor Perpuluhan
+            function genA7() {
+                const cases = [
+                    { dividend: 2.88, divisor: 0.04, unit: 'liter' },
+                    { dividend: 3.64, divisor: 0.07, unit: 'kg' },
+                    { dividend: 4.32, divisor: 0.06, unit: 'm' },
+                    { dividend: 5.25, divisor: 0.05, unit: 'liter' },
+                    { dividend: 6.48, divisor: 0.08, unit: 'km' },
+                    { dividend: 3.15, divisor: 0.09, unit: 'kg' }
+                ];
+                const c = randPick(cases);
+                const ans = Math.round(c.dividend / c.divisor);
+                const intDiv = Math.round(c.dividend * 100);
+                const intDivisor = Math.round(c.divisor * 100);
+
+                return {
+                    topicCode: 'KSSR_2.2.2_BAHAGI_PERPULUHAN',
+                    topicName: 'Pembahagian Perpuluhan dengan Perpuluhan',
+                    marks: 2,
+                    htmlPrompt: `<div>${c.dividend} ${c.unit} &divide; ${c.divisor} = </div>`,
+                    answerFinal: `${ans} ${c.unit}`,
+                    steps: [
+                        `Gerakkan titik perpuluhan 2 tempat ke kanan pada kedua-dua nombor (darab 100): ${intDiv} ÷ ${intDivisor} [1 markah]`,
+                        `Bahagikan: ${intDiv} ÷ ${intDivisor} = ${ans} ${c.unit} [1 markah]`
+                    ]
+                };
+            },
+
+            // A8: Penukaran antara Peratus Melebihi 100% dan Perpuluhan
+            function genA8() {
+                const mode = randPick(['pct_to_dec', 'dec_to_pct']);
+                const pairs = [
+                    { pct: 345, dec: '3.45' },
+                    { pct: 480, dec: '4.8' },
+                    { pct: 605, dec: '6.05' },
+                    { pct: 275, dec: '2.75' },
+                    { pct: 520, dec: '5.2' },
+                    { pct: 195, dec: '1.95' }
+                ];
+                const p = randPick(pairs);
+
+                if (mode === 'pct_to_dec') {
+                    return {
+                        topicCode: 'KSSR_2.3.1_TUKAR_PERATUS_PERPULUHAN',
+                        topicName: 'Menukar Peratusan Melebihi 100% kepada Perpuluhan',
+                        marks: 2,
+                        htmlPrompt: `<div>Nyatakan ${p.pct}% dalam bentuk perpuluhan.</div>`,
+                        answerFinal: p.dec,
+                        steps: [
+                            `Tukarkan peratus kepada per seratus: ${p.pct}% = ${p.pct} ÷ 100 [1 markah]`,
+                            `Gerakkan titik perpuluhan 2 tempat ke kiri = ${p.dec} [1 markah]`
+                        ]
+                    };
+                } else {
+                    return {
+                        topicCode: 'KSSR_2.3.1_TUKAR_PERATUS_PERPULUHAN',
+                        topicName: 'Menukar Nombor Perpuluhan kepada Peratusan',
+                        marks: 2,
+                        htmlPrompt: `<div>Tukarkan ${p.dec} kepada peratus.</div>`,
+                        answerFinal: `${p.pct}%`,
+                        steps: [
+                            `Darabkan nombor perpuluhan dengan 100%: ${p.dec} × 100% [1 markah]`,
+                            `Gerakkan titik perpuluhan 2 tempat ke kanan = ${p.pct}% [1 markah]`
+                        ]
+                    };
+                }
+            },
+
+            // A9: Mengira Peratusan daripada Nisbah Dua Nombor Perpuluhan
+            function genA9() {
+                const cases = [
+                    { num: 0.3, den: 0.4, ans: 75 },
+                    { num: 0.6, den: 0.8, ans: 75 },
+                    { num: 0.9, den: 0.5, ans: 180 },
+                    { num: 1.2, den: 0.8, ans: 150 },
+                    { num: 0.35, den: 0.5, ans: 70 },
+                    { num: 0.45, den: 0.3, ans: 150 }
+                ];
+                const c = randPick(cases);
+
+                return {
+                    topicCode: 'KSSR_2.3.2_PERATUS_DARIPADA_PERPULUHAN',
+                    topicName: 'Menentukan Peratusan Melibatkan Nombor Perpuluhan',
+                    marks: 2,
+                    htmlPrompt: `<div>Hitung nilai bagi &nbsp; ${renderFracHTML(c.num, c.den)} &times; 100% = </div>`,
+                    answerFinal: `${c.ans}%`,
+                    steps: [
+                        `Permudahkan pecahan perpuluhan dengan mendarab pengangka dan penyebut dengan 100: (${c.num * 100} / ${c.den * 100}) × 100% [1 markah]`,
+                        `Selesaikan pengiraan = ${c.ans}% [1 markah]`
+                    ]
+                };
+            },
+
+            // A10: Pembahagian Pecahan Wajar / Nombor Bercampur dengan Pecahan Wajar
+            function genA10() {
+                const cases = [
+                    { w1: 0, n1: 3, d1: 4, n2: 3, d2: 8, ansW: 2, ansN: 0, ansD: 1 },
+                    { w1: 0, n1: 2, d1: 3, n2: 4, d2: 9, ansW: 1, ansN: 1, ansD: 2 },
+                    { w1: 1, n1: 1, d1: 2, n2: 3, d2: 4, ansW: 2, ansN: 0, ansD: 1 },
+                    { w1: 0, n1: 3, d1: 5, n2: 9, d2: 10, ansW: 0, ansN: 2, ansD: 3 },
+                    { w1: 1, n1: 1, d1: 4, n2: 5, d2: 8, ansW: 2, ansN: 0, ansD: 1 },
+                    { w1: 0, n1: 5, d1: 6, n2: 5, d2: 12, ansW: 2, ansN: 0, ansD: 1 }
+                ];
+                const c = randPick(cases);
+                const impNum = c.w1 * c.d1 + c.n1;
+                const ansStr = c.ansN === 0 ? `${c.ansW}` : (c.ansW > 0 ? `${c.ansW} ${c.ansN}/${c.ansD}` : `${c.ansN}/${c.ansD}`);
+
+                return {
+                    topicCode: 'KSSR_2.1.1_BAHAGI_PECAHAN',
+                    topicName: 'Pembahagian Melibatkan Pecahan',
+                    marks: 2,
+                    htmlPrompt: `<div>Selesaikan: &nbsp; ${renderMixedHTML(c.w1, c.n1, c.d1)} &divide; ${renderFracHTML(c.n2, c.d2)} = </div>`,
+                    answerFinal: ansStr,
+                    steps: [
+                        `Songsangkan pecahan pembahagi dan tukar operasi bahagi kepada darab: (${impNum}/${c.d1}) × (${c.d2}/${c.n2}) [1 markah]`,
+                        `Permudahkan dan darab pengangka dengan pengangka, penyebut dengan penyebut = ${ansStr} [1 markah]`
+                    ]
+                };
+            },
+
+            // A11: Pendaraban Dua Nombor Perpuluhan
+            function genA11() {
+                const cases = [
+                    { a: 0.6, b: 2.35 },
+                    { a: 0.4, b: 3.75 },
+                    { a: 1.2, b: 1.45 },
+                    { a: 0.8, b: 2.65 },
+                    { a: 1.5, b: 2.34 },
+                    { a: 0.7, b: 1.85 }
+                ];
+                const c = randPick(cases);
+                const ans = Number((c.a * c.b).toFixed(4));
+
+                return {
+                    topicCode: 'KSSR_2.2.1_DARAB_DUA_PERPULUHAN',
+                    topicName: 'Pendaraban Dua Nombor Perpuluhan',
+                    marks: 2,
+                    htmlPrompt: `<div>Hitung: &nbsp; ${c.a} &times; ${c.b} = </div>`,
+                    answerFinal: formatDec(ans),
+                    steps: [
+                        `Darabkan seperti nombor bulat: ${Math.round(c.a * 10)} × ${Math.round(c.b * 100)} = ${Math.round(ans * 1000)} [1 markah]`,
+                        `Jumlah tempat perpuluhan ialah 3 tempat, maka jawapan = ${formatDec(ans)} [1 markah]`
+                    ]
+                };
+            },
+
+            // A12: Penyelesaian Masalah Berjadual Melibatkan Pecahan Juta & Perpuluhan Juta
+            function genA12() {
+                const contexts = [
+                    {
+                        intro: 'Jadual 1 menunjukkan bilangan sarung tangan getah yang dikeluarkan oleh sebuah kilang dalam tempoh dua bulan.',
+                        col1: 'Bulan',
+                        col2: 'Bilangan sarung tangan',
+                        row1: 'Januari',
+                        row2: 'Februari',
+                        itemName: 'sarung tangan getah',
+                        question: 'Hitung jumlah sarung tangan getah yang dikeluarkan dalam kedua-dua bulan itu.'
+                    },
+                    {
+                        intro: 'Jadual 1 menunjukkan bilangan penonton dua buah saluran video pendidikan dalam masa setahun.',
+                        col1: 'Saluran',
+                        col2: 'Bilangan penonton',
+                        row1: 'Saluran Sains',
+                        row2: 'Saluran Sejarah',
+                        itemName: 'penonton',
+                        question: 'Berapakah jumlah penonton bagi kedua-dua saluran itu?'
+                    },
+                    {
+                        intro: 'Jadual 1 menunjukkan kutipan mata ganjaran oleh dua buah pasukan dalam pertandingan kitar semula kebangsaan.',
+                        col1: 'Pasukan',
+                        col2: 'Jumlah mata ganjaran',
+                        row1: 'Pasukan Hijau',
+                        row2: 'Pasukan Biru',
+                        itemName: 'mata ganjaran',
+                        question: 'Hitung jumlah keseluruhan mata ganjaran yang dikutip oleh kedua-dua pasukan itu.'
+                    }
+                ];
+                const nums = [
+                    { n: 3, d: 4, decMore: 0.45 }, // 750,000 + (750,000 + 450,000) = 1,950,000
+                    { n: 1, d: 2, decMore: 0.85 }, // 500,000 + 1,350,000 = 1,850,000
+                    { n: 3, d: 5, decMore: 0.65 }, // 600,000 + 1,250,000 = 1,850,000
+                    { n: 4, d: 5, decMore: 0.35 }  // 800,000 + 1,150,000 = 1,950,000
+                ];
+                const ctx = randPick(contexts);
+                const num = randPick(nums);
+
+                const val1 = Math.round((num.n / num.d) * 1000000);
+                const diff = Math.round(num.decMore * 1000000);
+                const val2 = val1 + diff;
+                const total = val1 + val2;
+
+                const htmlPrompt = `
+                    <div>${ctx.intro}</div>
+                    <div class="my-2.5 max-w-md mx-auto">
+                        <table class="exam-table">
+                            <thead>
+                                <tr>
+                                    <th class="w-2/5">${ctx.col1}</th>
+                                    <th class="w-3/5">${ctx.col2}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>${ctx.row1}</td>
+                                    <td>${renderFracHTML(num.n, num.d)} juta</td>
+                                </tr>
+                                <tr>
+                                    <td>${ctx.row2}</td>
+                                    <td>${num.decMore} juta lebih daripada ${ctx.row1}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="text-center text-xs font-bold mt-1">Jadual 1</div>
+                    </div>
+                    <div>${ctx.question}</div>
+                `;
+
+                return {
+                    topicCode: 'KSSR_1.4.1_MASALAH_JADUAL_JUTA',
+                    topicName: 'Penyelesaian Masalah Berjadual (Pecahan & Perpuluhan Juta)',
+                    marks: 2,
+                    htmlPrompt,
+                    answerFinal: formatInt(total),
+                    steps: [
+                        `Nilai ${ctx.row1} = (${num.n}/${num.d}) × 1 000 000 = ${formatInt(val1)}`,
+                        `Nilai ${ctx.row2} = ${formatInt(val1)} + ${formatInt(diff)} = ${formatInt(val2)} [1 markah]`,
+                        `Jumlah keseluruhan = ${formatInt(val1)} + ${formatInt(val2)} = ${formatInt(total)} [1 markah]`
+                    ]
+                };
+            },
+
+            // A13: Penyelesaian Masalah Pembahagian Pecahan / Nombor Bercampur (Masa / Ukuran)
+            function genA13() {
+                const cases = [
+                    {
+                        text: (u, t) => `Puan Nadia mengambil masa selama ${renderFracHTML(2, 3)} jam untuk membakar sebiji kek cawan istimewa. Hitung bilangan kek yang dapat dibakarnya dalam masa 2 jam 40 minit.`,
+                        unitStep: '2 jam 40 minit = 2 2/3 jam = 8/3 jam',
+                        calcStep: '(8/3) ÷ (2/3) = (8/3) × (3/2) = 4',
+                        ans: '4 biji kek'
+                    },
+                    {
+                        text: () => `Encik Hafiz memotong seutas tali sepanjang ${renderMixedHTML(3, 3, 4)} m kepada beberapa bahagian yang sama panjang. Jika panjang setiap bahagian ialah ${renderFracHTML(3, 4)} m, berapakah bilangan bahagian tali yang diperoleh?`,
+                        unitStep: '3 3/4 m = 15/4 m',
+                        calcStep: '(15/4) ÷ (3/4) = (15/4) × (4/3) = 5',
+                        ans: '5 bahagian tali'
+                    },
+                    {
+                        text: () => `Seorang tukang jahit memerlukan ${renderFracHTML(3, 5)} jam untuk menjahit sehelai baju kurung. Berapa helaikah baju kurung yang dapat disiapkannya dalam tempoh 3 jam?`,
+                        unitStep: 'Jumlah masa = 3 jam',
+                        calcStep: '3 ÷ (3/5) = 3 × (5/3) = 5',
+                        ans: '5 helai baju kurung'
+                    },
+                    {
+                        text: () => `Sebuah bekas mengandungi ${renderMixedHTML(4, 1, 2)} liter jus oren. Semua jus itu dituang sama banyak ke dalam beberapa botol berkapasiti ${renderFracHTML(3, 4)} liter setiap satu. Berapakah bilangan botol yang diperlukan?`,
+                        unitStep: '4 1/2 liter = 9/2 liter',
+                        calcStep: '(9/2) ÷ (3/4) = (9/2) × (4/3) = 6',
+                        ans: '6 botol'
+                    }
+                ];
+                const c = randPick(cases);
+
+                return {
+                    topicCode: 'KSSR_2.4.1_MASALAH_BAHAGI_PECAHAN',
+                    topicName: 'Penyelesaian Masalah Pembahagian Pecahan',
+                    marks: 2,
+                    htmlPrompt: `<div>${c.text()}</div>`,
+                    answerFinal: c.ans,
+                    steps: [
+                        `Tukar kepada bentuk pecahan tak wajar/unit yang sama: ${c.unitStep} [1 markah]`,
+                        `Bahagikan: ${c.calcStep} → Jawapan = ${c.ans} [1 markah]`
+                    ]
+                };
+            }
+        ];
+
+        // ============================================================================
+        // BANK PENJANA SOALAN BAHAGIAN B (2 SOALAN BERSTRUKTUR × 12 MARKAH = 24 MARKAH)
+        // ============================================================================
+
+        function generateBahagianB() {
+            // ------------------------------------------------------------------------
+            // SOALAN 1 BAHAGIAN B [12 MARKAH]: 4 sub-soalan (a), (b), (c), (d) @ 3 markah
+            // Konteks Keluarga / Kokurikulum / Kesihatan / Kewangan Harian
+            // ------------------------------------------------------------------------
+            const b1Themes = [
+                {
+                    father: 'Encik Hakimi',
+                    mother: 'Puan Aisyah',
+                    child: 'Danial',
+                    introA: 'Encik Hakimi membawa isterinya, Puan Aisyah dan anaknya, Danial ke klinik kesihatan untuk pemeriksaan berkala. Rajah 1 menunjukkan perbualan antara Encik Hakimi dan Puan Aisyah.',
+                    childHeight: 1.35, // m
+                    fatherPct: 120,    // 1.35 * 1.2 = 1.62 m
+                    motherFrac: { w: 1, n: 3, d: 5 },
+                    childMass: 28.25,  // * 2 = 56.5 = 56 1/2 kg
+                    fatherMass: 82,
+                    fatherAge: 36,
+                    motherAgeDiff: 3.5, // 32.5 tahun
+                    childAge: { w: 11, n: 1, d: 2 }, // 11.5 tahun -> jumlah = 36 + 32.5 + 11.5 = 80 tahun
+                    fatherSave: 500,
+                    motherSave: 850    // (850/500)*100 = 170%
+                },
+                {
+                    father: 'Encik Zulkifli',
+                    mother: 'Puan Mariam',
+                    child: 'Irfan',
+                    introA: 'Encik Zulkifli, isterinya Puan Mariam dan anak mereka Irfan menyertai program kecergasan komuniti. Rajah 1 menunjukkan perbualan antara Encik Zulkifli dan Puan Mariam.',
+                    childHeight: 1.45, // m
+                    fatherPct: 120,    // 1.45 * 1.2 = 1.74 m
+                    motherFrac: { w: 1, n: 1, d: 2 },
+                    childMass: 32.75,  // * 2 = 65.5 = 65 1/2 kg
+                    fatherMass: 79,
+                    fatherAge: 40,
+                    motherAgeDiff: 4.5, // 35.5 tahun
+                    childAge: { w: 12, n: 1, d: 2 }, // 12.5 tahun -> jumlah = 40 + 35.5 + 12.5 = 88 tahun
+                    fatherSave: 600,
+                    motherSave: 960    // (960/600)*100 = 160%
+                },
+                {
+                    father: 'Encik Farid',
+                    mother: 'Puan Salwa',
+                    child: 'Amira',
+                    introA: 'Encik Farid bersama isterinya, Puan Salwa dan anaknya, Amira menjalani ujian saringan kesihatan keluarga. Rajah 1 menunjukkan perbualan antara Encik Farid dan Puan Salwa.',
+                    childHeight: 1.25, // m
+                    fatherPct: 140,    // 1.25 * 1.4 = 1.75 m
+                    motherFrac: { w: 1, n: 3, d: 5 },
+                    childMass: 26.25,  // * 2 = 52.5 = 52 1/2 kg
+                    fatherMass: 84,
+                    fatherAge: 38,
+                    motherAgeDiff: 2.5, // 35.5 tahun
+                    childAge: { w: 10, n: 1, d: 2 }, // 10.5 tahun -> jumlah = 38 + 35.5 + 10.5 = 84 tahun
+                    fatherSave: 800,
+                    motherSave: 1400   // (1400/800)*100 = 175%
+                }
+            ];
+
+            const t1 = randPick(b1Themes);
+            const fatherHeight = Number((t1.childHeight * (t1.fatherPct / 100)).toFixed(2));
+            const motherMass = Number((t1.childMass * 2).toFixed(2)); // sentiasa .5 -> pecahan 1/2
+            const motherMassWhole = Math.floor(motherMass);
+            const motherAge = t1.fatherAge - t1.motherAgeDiff;
+            const childAgeDec = t1.childAge.w + t1.childAge.n / t1.childAge.d;
+            const totalAge = t1.fatherAge + motherAge + childAgeDec;
+            const savePct = Math.round((t1.motherSave / t1.fatherSave) * 100);
+
+            // Ilustrasi SVG perbualan dua watak menyerupai PDF asal (bersih & tajam)
+            const dialogueSvg = `
+                <svg viewBox="0 0 540 145" class="w-full max-w-lg mx-auto my-2" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Buih Pertuturan Bapa -->
+                    <rect x="20" y="10" width="215" height="62" rx="12" fill="#ffffff" stroke="#000000" stroke-width="1.5"/>
+                    <polygon points="105,72 118,72 95,88" fill="#ffffff" stroke="#000000" stroke-width="1.5"/>
+                    <line x1="106" y1="72" x2="117" y2="72" stroke="#ffffff" stroke-width="2.5"/>
+                    <text x="127" y="31" text-anchor="middle" font-family="Tinos, serif" font-size="13" fill="#000">Tinggi saya ialah ${t1.fatherPct}%</text>
+                    <text x="127" y="48" text-anchor="middle" font-family="Tinos, serif" font-size="13" fill="#000">daripada tinggi ${t1.child}.</text>
+
+                    <!-- Buih Pertuturan Ibu -->
+                    <rect x="305" y="10" width="215" height="62" rx="12" fill="#ffffff" stroke="#000000" stroke-width="1.5"/>
+                    <polygon points="415,72 428,72 438,88" fill="#ffffff" stroke="#000000" stroke-width="1.5"/>
+                    <line x1="416" y1="72" x2="427" y2="72" stroke="#ffffff" stroke-width="2.5"/>
+                    <text x="412" y="31" text-anchor="middle" font-family="Tinos, serif" font-size="13" fill="#000">Tinggi saya pula ialah</text>
+                    <text x="412" y="51" text-anchor="middle" font-family="Tinos, serif" font-size="14" font-weight="bold" fill="#000">${t1.motherFrac.w} ${t1.motherFrac.n}/${t1.motherFrac.d} m.</text>
+
+                    <!-- Ikon Watak Bapa -->
+                    <circle cx="85" cy="100" r="10" fill="none" stroke="#000" stroke-width="1.5"/>
+                    <path d="M68,128 C68,114 102,114 102,128" fill="none" stroke="#000" stroke-width="1.5"/>
+                    <text x="85" y="142" text-anchor="middle" font-family="Tinos, serif" font-size="12.5" font-weight="bold">${t1.father}</text>
+
+                    <!-- Ikon Watak Ibu -->
+                    <circle cx="445" cy="100" r="10" fill="none" stroke="#000" stroke-width="1.5"/>
+                    <path d="M432,96 C432,86 458,86 458,96 L461,114 L429,114 Z" fill="none" stroke="#000" stroke-width="1.3"/>
+                    <path d="M428,128 C428,115 462,115 462,128" fill="none" stroke="#000" stroke-width="1.5"/>
+                    <text x="445" y="142" text-anchor="middle" font-family="Tinos, serif" font-size="12.5" font-weight="bold">${t1.mother}</text>
+                </svg>
+            `;
+
+            const b1 = {
+                number: 1,
+                totalMarks: 12,
+                parts: [
+                    {
+                        label: '(a)',
+                        marks: 3,
+                        topicCode: 'KSSR_B1A_PERATUS_TINGGI',
+                        topicName: 'Penyelesaian Masalah Peratusan Melebihi 100% (Ukuran Panjang)',
+                        htmlPrompt: `
+                            <div>${t1.introA}</div>
+                            ${dialogueSvg}
+                            <div class="text-center text-xs font-bold mb-1.5">Rajah 1</div>
+                            <div>Tinggi ${t1.child} ialah ${t1.childHeight} m. Berapakah tinggi, dalam m, ${t1.father}?</div>
+                        `,
+                        answerFinal: `${formatDec(fatherHeight)} m`,
+                        steps: [
+                            `Kenal pasti formula: Tinggi ${t1.father} = ${t1.fatherPct}% × ${t1.childHeight} m [1 markah]`,
+                            `Pengiraan: (${t1.fatherPct} / 100) × ${t1.childHeight} m = ${(t1.fatherPct * t1.childHeight).toFixed(1)} ÷ 100 [1 markah]`,
+                            `Jawapan akhir = ${formatDec(fatherHeight)} m [1 markah]`
+                        ]
+                    },
+                    {
+                        label: '(b)',
+                        marks: 3,
+                        topicCode: 'KSSR_B1B_JISIM_PECAHAN',
+                        topicName: 'Pendaraban Perpuluhan dan Penukaran kepada Pecahan (Jisim)',
+                        htmlPrompt: `
+                            <div>Jadual 2 menunjukkan jisim bagi ${t1.father} dan ${t1.child}. Jisim ${t1.mother} tidak ditunjukkan.</div>
+                            <div class="my-2 max-w-sm mx-auto">
+                                <table class="exam-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="w-1/2">Nama</th>
+                                            <th class="w-1/2">Jisim</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>${t1.father}</td><td>${t1.fatherMass} kg</td></tr>
+                                        <tr><td>${t1.mother}</td><td></td></tr>
+                                        <tr><td>${t1.child}</td><td>${t1.childMass} kg</td></tr>
+                                    </tbody>
+                                </table>
+                                <div class="text-center text-xs font-bold mt-1">Jadual 2</div>
+                            </div>
+                            <div>Jisim ${t1.mother} adalah 2 kali jisim ${t1.child}. Hitung jisim, dalam kg, bagi ${t1.mother}. Nyatakan jawapan dalam bentuk pecahan.</div>
+                        `,
+                        answerFinal: `${motherMassWhole} 1/2 kg`,
+                        steps: [
+                            `Darabkan jisim ${t1.child} dengan 2: ${t1.childMass} kg × 2 = ${formatDec(motherMass)} kg [1 markah]`,
+                            `Tukarkan bahagian perpuluhan kepada pecahan: 0.5 = 5/10 = 1/2 [1 markah]`,
+                            `Jawapan akhir dalam pecahan = ${motherMassWhole} 1/2 kg [1 markah]`
+                        ]
+                    },
+                    {
+                        label: '(c)',
+                        marks: 3,
+                        topicCode: 'KSSR_B1C_UMUR_PERPULUHAN_PECAHAN',
+                        topicName: 'Operasi Melibatkan Perpuluhan dan Pecahan dalam Konteks Umur',
+                        htmlPrompt: `
+                            <div>Umur ${t1.father} ialah ${t1.fatherAge} tahun. Umur ${t1.mother} pula ${t1.motherAgeDiff} tahun kurang daripada umur ${t1.father}. Jika umur ${t1.child} ialah ${renderMixedHTML(t1.childAge.w, t1.childAge.n, t1.childAge.d)} tahun, hitung jumlah umur mereka bertiga.</div>
+                        `,
+                        answerFinal: `${totalAge} tahun`,
+                        steps: [
+                            `Umur ${t1.mother} = ${t1.fatherAge} tahun − ${t1.motherAgeDiff} tahun = ${motherAge} tahun [1 markah]`,
+                            `Tukarkan umur ${t1.child} kepada perpuluhan: ${t1.childAge.w} ${t1.childAge.n}/${t1.childAge.d} tahun = ${childAgeDec} tahun [1 markah]`,
+                            `Jumlah umur bertiga = ${t1.fatherAge} + ${motherAge} + ${childAgeDec} = ${totalAge} tahun [1 markah]`
+                        ]
+                    },
+                    {
+                        label: '(d)',
+                        marks: 3,
+                        topicCode: 'KSSR_B1D_PERATUS_SIMPANAN',
+                        topicName: 'Menghitung Peratusan Perbandingan Kewangan Melebihi 100%',
+                        htmlPrompt: `
+                            <div>Jadual 3 menunjukkan wang simpanan bulanan ${t1.father} dan ${t1.mother}.</div>
+                            <div class="my-2.5 max-w-sm mx-auto">
+                                <table class="exam-table">
+                                    <tbody>
+                                        <tr>
+                                            <th class="w-1/2">${t1.father}</th>
+                                            <td class="w-1/2">RM${t1.fatherSave}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>${t1.mother}</th>
+                                            <td>RM${t1.motherSave}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div class="text-center text-xs font-bold mt-1">Jadual 3</div>
+                            </div>
+                            <div>Berapakah peratusan wang simpanan ${t1.mother} berbanding wang simpanan ${t1.father}?</div>
+                        `,
+                        answerFinal: `${savePct}%`,
+                        steps: [
+                            `Bina pecahan perbandingan: (RM${t1.motherSave} / RM${t1.fatherSave}) × 100% [1 markah]`,
+                            `Permudahkan: (${t1.motherSave} ÷ ${t1.fatherSave}) × 100% = ${formatDec(t1.motherSave / t1.fatherSave)} × 100% [1 markah]`,
+                            `Jawapan akhir = ${savePct}% [1 markah]`
+                        ]
+                    }
+                ]
+            };
+
+            // ------------------------------------------------------------------------
+            // SOALAN 2 BAHAGIAN B [12 MARKAH]: 4 sub-soalan (a)[4m], (b)[2m], (c)[3m], (d)[3m]
+            // Konteks Program Kebangsaan / Kempen / Pengeluaran Berskala Juta
+            // ------------------------------------------------------------------------
+            const b2Themes = [
+                {
+                    org: 'Kementerian Belia dan Sukan',
+                    event: 'Karnival Kecergasan Kebangsaan',
+                    catA: 'Larian Amal',
+                    catB: 'Kayuhan Santai',
+                    catC: 'Jalan Sihat',
+                    diffAB: 12450,
+                    valB: 387550, // valA = 400,000
+                    valCFrac: { w: 1, n: 1, d: 2 }, // 1,500,000 -> total = 400,000 + 387,550 + 1,500,000 = 2,287,550
+                    cElderlyDec: 0.125, // 125,000
+                    cAdultFrac: { n: 3, d: 4 }, // 750,000
+                    cKidsWhole: 625000, // beza dewasa & kanak-kanak = 125,000 = 1/8 juta
+                    company: 'Syarikat Seri Maju',
+                    product: 'kemeja-T sukan',
+                    orderDecMillion: 1.64, // 1,640,000
+                    weeks: 4 // 410,000 helai seminggu
+                },
+                {
+                    org: 'Jabatan Alam Sekitar Malaysia',
+                    event: 'Kempen Bumi Hijau Kebangsaan',
+                    catA: 'Tanam Pokok',
+                    catB: 'Kitar Semula',
+                    catC: 'Bersih Pantai',
+                    diffAB: 15200,
+                    valB: 434800, // valA = 450,000
+                    valCFrac: { w: 1, n: 1, d: 4 }, // 1,250,000 -> total = 450,000 + 434,800 + 1,250,000 = 2,134,800
+                    cElderlyDec: 0.15, // 150,000
+                    cAdultFrac: { n: 3, d: 5 }, // 600,000
+                    cKidsWhole: 500000, // beza dewasa & kanak-kanak = 100,000 = 1/10 juta
+                    company: 'Kilang Beg Mesra Alam',
+                    product: 'beg guna semula',
+                    orderDecMillion: 1.85, // 1,850,000
+                    weeks: 5 // 370,000 beg seminggu
+                },
+                {
+                    org: 'Kementerian Pendidikan Malaysia',
+                    event: 'Program Bulan Membaca Kebangsaan',
+                    catA: 'Resensi Buku',
+                    catB: 'Kuiz Literasi',
+                    catC: 'Jom Baca Bersama',
+                    diffAB: 18600,
+                    valB: 531400, // valA = 550,000
+                    valCFrac: { w: 1, n: 3, d: 4 }, // 1,750,000 -> total = 550,000 + 531,400 + 1,750,000 = 2,831,400
+                    cElderlyDec: 0.25, // 250,000
+                    cAdultFrac: { n: 4, d: 5 }, // 800,000
+                    cKidsWhole: 700000, // beza dewasa & kanak-kanak = 100,000 = 1/10 juta
+                    company: 'Penerbitan Ilmu Bakti',
+                    product: 'buku cerita kanak-kanak',
+                    orderDecMillion: 1.56, // 1,560,000
+                    weeks: 4 // 390,000 naskhah seminggu
+                }
+            ];
+
+            const t2 = randPick(b2Themes);
+            const valA = t2.valB + t2.diffAB;
+            const valC = Math.round((t2.valCFrac.w + t2.valCFrac.n / t2.valCFrac.d) * 1000000);
+            const totalParticipants = valA + t2.valB + valC;
+            const diffAC = valC - valA;
+
+            const adultCount = Math.round((t2.cAdultFrac.n / t2.cAdultFrac.d) * 1000000);
+            const diffAdultKids = adultCount - t2.cKidsWhole;
+            const fracDiffMillion = simplifyFraction(diffAdultKids, 1000000);
+
+            const orderTotal = Math.round(t2.orderDecMillion * 1000000);
+            const weeklyOutput = Math.round(orderTotal / t2.weeks);
+
+            // Infografik SVG 3 Kategori Acara (menyerupai rajah halaman 8 PDF contoh)
+            const infographicSvg = `
+                <svg viewBox="0 0 540 205" class="w-full max-w-lg mx-auto my-2" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Kategori 1 (Atas) -->
+                    <g transform="translate(30, 6)">
+                        <!-- Ikon Pelari -->
+                        <circle cx="38" cy="14" r="6" fill="none" stroke="#000" stroke-width="1.5"/>
+                        <path d="M35,21 L28,34 L18,38 M35,21 L46,27 L52,21 M28,34 L36,46 L32,56 M28,34 L16,46 L10,44" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round"/>
+                        <!-- Kotak Label & Maklumat -->
+                        <rect x="135" y="2" width="140" height="20" fill="#ffffff" stroke="#000" stroke-width="1.3"/>
+                        <text x="205" y="16" text-anchor="middle" font-family="Tinos, serif" font-size="12.5" font-weight="bold" font-style="italic">${t2.catA}</text>
+                        <rect x="95" y="22" width="220" height="36" fill="#ffffff" stroke="#000" stroke-width="1.3"/>
+                        <text x="205" y="37" text-anchor="middle" font-family="Tinos, serif" font-size="12.5">${formatInt(t2.diffAB)} orang peserta</text>
+                        <text x="205" y="52" text-anchor="middle" font-family="Tinos, serif" font-size="12.5">lebih daripada <tspan font-style="italic">${t2.catB}</tspan></text>
+                    </g>
+
+                    <!-- Kategori 2 (Tengah) -->
+                    <g transform="translate(30, 74)">
+                        <!-- Kotak Label & Maklumat -->
+                        <rect x="135" y="2" width="140" height="20" fill="#ffffff" stroke="#000" stroke-width="1.3"/>
+                        <text x="205" y="16" text-anchor="middle" font-family="Tinos, serif" font-size="12.5" font-weight="bold" font-style="italic">${t2.catB}</text>
+                        <rect x="95" y="22" width="220" height="28" fill="#ffffff" stroke="#000" stroke-width="1.3"/>
+                        <text x="205" y="40" text-anchor="middle" font-family="Tinos, serif" font-size="13">${formatInt(t2.valB)} orang peserta</text>
+                        <!-- Ikon Pengayuh Basikal -->
+                        <circle cx="385" cy="40" r="10" fill="none" stroke="#000" stroke-width="1.5"/>
+                        <circle cx="425" cy="40" r="10" fill="none" stroke="#000" stroke-width="1.5"/>
+                        <path d="M385,40 L402,26 L418,26 L425,40 M402,26 L405,40 L385,40" fill="none" stroke="#000" stroke-width="1.4"/>
+                        <circle cx="408" cy="12" r="5" fill="none" stroke="#000" stroke-width="1.5"/>
+                        <path d="M406,18 L398,27 M406,18 L417,24" fill="none" stroke="#000" stroke-width="1.5"/>
+                    </g>
+
+                    <!-- Kategori 3 (Bawah) -->
+                    <g transform="translate(30, 134)">
+                        <!-- Ikon Pejalan Kaki -->
+                        <circle cx="38" cy="12" r="6" fill="none" stroke="#000" stroke-width="1.5"/>
+                        <path d="M38,19 L38,38 L30,56 M38,38 L46,56 M38,24 L29,34 M38,24 L47,33" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round"/>
+                        <!-- Kotak Label & Maklumat -->
+                        <rect x="135" y="4" width="140" height="20" fill="#ffffff" stroke="#000" stroke-width="1.3"/>
+                        <text x="205" y="18" text-anchor="middle" font-family="Tinos, serif" font-size="12.5" font-weight="bold" font-style="italic">${t2.catC}</text>
+                        <rect x="95" y="24" width="220" height="32" fill="#ffffff" stroke="#000" stroke-width="1.3"/>
+                        <text x="205" y="44" text-anchor="middle" font-family="Tinos, serif" font-size="13.5">${t2.valCFrac.w} ${t2.valCFrac.n}/${t2.valCFrac.d} juta orang peserta</text>
+                    </g>
+                </svg>
+            `;
+
+            const b2 = {
+                number: 2,
+                totalMarks: 12,
+                parts: [
+                    {
+                        label: '(a)',
+                        marks: 4,
+                        topicCode: 'KSSR_B2A_JUMLAH_PESERTA_JUTA',
+                        topicName: 'Operasi Tambah Melibatkan Nombor Bulat dan Pecahan Juta',
+                        htmlPrompt: `
+                            <div>${t2.org} telah menganjurkan pelbagai acara sempena ${t2.event}. Rajah 2 menunjukkan bilangan peserta bagi tiga jenis acara yang berdaftar secara dalam talian.</div>
+                            ${infographicSvg}
+                            <div class="text-center text-xs font-bold mb-1.5">Rajah 2</div>
+                            <div>Berapakah jumlah peserta yang telah mendaftar secara dalam talian bagi ketiga-tiga acara tersebut?</div>
+                        `,
+                        answerFinal: `${formatInt(totalParticipants)} orang peserta`,
+                        steps: [
+                            `Bilangan peserta ${t2.catA} = ${formatInt(t2.valB)} + ${formatInt(t2.diffAB)} = ${formatInt(valA)} [1 markah]`,
+                            `Tukarkan peserta ${t2.catC} kepada nombor bulat: ${t2.valCFrac.w} ${t2.valCFrac.n}/${t2.valCFrac.d} juta = ${formatInt(valC)} [1 markah]`,
+                            `Tambah ketiga-tiga acara: ${formatInt(valA)} + ${formatInt(t2.valB)} + ${formatInt(valC)} [1 markah]`,
+                            `Jumlah keseluruhan = ${formatInt(totalParticipants)} orang peserta [1 markah]`
+                        ]
+                    },
+                    {
+                        label: '(b)',
+                        marks: 2,
+                        topicCode: 'KSSR_B2B_BEZA_PESERTA',
+                        topicName: 'Mencari Perbezaan Kuantiti daripada Data Infografik',
+                        htmlPrompt: `
+                            <div>Berdasarkan Rajah 2 di 2(a), didapati bilangan peserta yang mendaftar acara <i>${t2.catB}</i> adalah paling kurang berbanding <i>${t2.catC}</i> dan <i>${t2.catA}</i>.</div>
+                            <div class="mt-1">Berapakah perbezaan bilangan peserta yang mendaftar acara <i>${t2.catA}</i> dan <i>${t2.catC}</i>?</div>
+                        `,
+                        answerFinal: `${formatInt(diffAC)} orang peserta`,
+                        steps: [
+                            `Tolakkan bilangan peserta ${t2.catA} daripada ${t2.catC}: ${formatInt(valC)} − ${formatInt(valA)} [1 markah]`,
+                            `Perbezaan = ${formatInt(diffAC)} orang peserta [1 markah]`
+                        ]
+                    },
+                    {
+                        label: '(c)',
+                        marks: 3,
+                        topicCode: 'KSSR_B2C_JADUAL_PECAHAN_JUTA',
+                        topicName: 'Penyelesaian Masalah Berjadual & Penukaran kepada Pecahan Juta',
+                        htmlPrompt: `
+                            <div>Jadual 4 menunjukkan bilangan peserta bagi acara <i>${t2.catC}</i> mengikut kategori umur.</div>
+                            <div class="my-2 max-w-md mx-auto">
+                                <table class="exam-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="w-1/2">Kategori Umur</th>
+                                            <th class="w-1/2">Bilangan peserta</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>Warga emas</td><td>${t2.cElderlyDec} juta</td></tr>
+                                        <tr><td>Dewasa</td><td>${renderFracHTML(t2.cAdultFrac.n, t2.cAdultFrac.d)} juta</td></tr>
+                                        <tr><td>Kanak-kanak</td><td>${formatInt(t2.cKidsWhole)}</td></tr>
+                                    </tbody>
+                                </table>
+                                <div class="text-center text-xs font-bold mt-1">Jadual 4</div>
+                            </div>
+                            <div>Berapakah beza antara bilangan peserta dewasa dengan bilangan peserta kanak-kanak? Berikan jawapan dalam pecahan juta.</div>
+                        `,
+                        answerFinal: `${fracDiffMillion.num}/${fracDiffMillion.den} juta`,
+                        steps: [
+                            `Tukarkan bilangan peserta dewasa kepada nombor bulat: (${t2.cAdultFrac.n}/${t2.cAdultFrac.d}) × 1 000 000 = ${formatInt(adultCount)} [1 markah]`,
+                            `Hitung beza: ${formatInt(adultCount)} − ${formatInt(t2.cKidsWhole)} = ${formatInt(diffAdultKids)} [1 markah]`,
+                            `Tukarkan kepada pecahan juta termudah: ${formatInt(diffAdultKids)} / 1 000 000 = ${fracDiffMillion.num}/${fracDiffMillion.den} juta [1 markah]`
+                        ]
+                    },
+                    {
+                        label: '(d)',
+                        marks: 3,
+                        topicCode: 'KSSR_B2D_BAHAGI_PERPULUHAN_JUTA',
+                        topicName: 'Pembahagian Perpuluhan Juta dengan Nombor Bulat',
+                        htmlPrompt: `
+                            <div>Sempena ${t2.event}, ${t2.company} telah menerima tempahan ${t2.product} sebanyak ${t2.orderDecMillion} juta unit. Syarikat itu perlu menyiapkan semua tempahan tersebut dalam tempoh ${t2.weeks} minggu. Berapakah bilangan ${t2.product} yang dapat disiapkan dalam seminggu?</div>
+                        `,
+                        answerFinal: `${formatInt(weeklyOutput)} unit`,
+                        steps: [
+                            `Tukarkan ${t2.orderDecMillion} juta kepada nombor bulat: ${t2.orderDecMillion} × 1 000 000 = ${formatInt(orderTotal)} [1 markah]`,
+                            `Bahagikan dengan ${t2.weeks} minggu: ${formatInt(orderTotal)} ÷ ${t2.weeks} [1 markah]`,
+                            `Bilangan disiapkan dalam seminggu = ${formatInt(weeklyOutput)} unit [1 markah]`
+                        ]
+                    }
+                ]
+            };
+
+            return [b1, b2];
+        }
+
+        // ============================================================================
+        // MODUL KAWALAN KUALITI AUTOMATIK (QUALITY ASSURANCE VERIFIER)
+        // ============================================================================
+
+        function runQualityControl(examSet) {
+            const seenTopics = new Set();
+            let totalMarks = 0;
+            let allValid = true;
+            const issues = [];
+
+            // Semak Bahagian A (13 soalan × 2 markah = 26 markah)
+            if (examSet.bahagianA.length !== 13) {
+                allValid = false;
+                issues.push('Bilangan soalan Bahagian A tidak tepat (mesti 13).');
+            }
+
+            examSet.bahagianA.forEach((q, idx) => {
+                totalMarks += q.marks;
+                if (seenTopics.has(q.topicCode)) {
+                    allValid = false;
+                    issues.push(`Pertindihan topik dikesan pada A${idx + 1}: ${q.topicCode}`);
+                }
+                seenTopics.add(q.topicCode);
+
+                if (!q.answerFinal || q.answerFinal.includes('NaN') || q.answerFinal.includes('undefined') || !q.steps || q.steps.length === 0) {
+                    allValid = false;
+                    issues.push(`Ralat pengiraan atau skema jawapan pada A${idx + 1}`);
+                }
+            });
+
+            // Semak Bahagian B (2 soalan utama = 24 markah)
+            examSet.bahagianB.forEach((mainQ) => {
+                mainQ.parts.forEach((p) => {
+                    totalMarks += p.marks;
+                    if (seenTopics.has(p.topicCode)) {
+                        allValid = false;
+                        issues.push(`Pertindihan topik dikesan pada B${mainQ.number}${p.label}`);
+                    }
+                    seenTopics.add(p.topicCode);
+
+                    if (!p.answerFinal || p.answerFinal.includes('NaN') || p.answerFinal.includes('undefined') || !p.steps || p.steps.length === 0) {
+                        allValid = false;
+                        issues.push(`Ralat pengiraan atau skema jawapan pada B${mainQ.number}${p.label}`);
+                    }
+                });
+            });
+
+            if (totalMarks !== 50) {
+                allValid = false;
+                issues.push(`Jumlah markah keseluruhan ialah ${totalMarks} (sepatutnya 50).`);
+            }
+
+            return {
+                passed: allValid,
+                totalMarks,
+                uniqueSkillsCount: seenTopics.size,
+                issues
+            };
+        }
+
+        // ============================================================================
+        // PEMBINA PAPARAN HELAIAN A4 (Halaman 1–9 + Halaman Skema Jawapan Akhir)
+        // ============================================================================
+
+        function buildHeaderHTML(pageNumber) {
+            return `
+                <div class="w-full border-b border-black pb-1.5 mb-3 flex items-center justify-between text-[11pt] font-bold">
+                    <span>SULIT</span>
+                    <span>${pageNumber}</span>
+                    <span>MATEMATIK TAHUN 6</span>
+                </div>
+            `;
+        }
+
+        function buildFooterHTML() {
+            return `
+                <div class="w-full border-t border-black pt-1.5 mt-2 flex items-center justify-between text-[10pt] font-bold">
+                    <span>UJIAN PERTENGAHAN SESI AKADEMIK</span>
+                    <span>TAHUN 6</span>
+                    <span>SULIT</span>
+                </div>
+            `;
+        }
+
+        function renderExamPaper(examSet) {
+// ... existing code ... -->
+                        <!-- Tajuk Utama Peperiksaan (Dikekalkan Mengikut Format Rasmi) -->
+                        <div class="text-center my-6 space-y-3">
+                            <h2 class="text-[20pt] font-bold tracking-wide uppercase leading-tight">
+                                UJIAN PERTENGAHAN SESI AKADEMIK
+                            </h2>
+                            <div class="w-3/4 mx-auto border-b border-black my-3"></div>
+                            <div class="pt-2 space-y-2">
+                                <div class="text-[22pt] font-bold tracking-wider uppercase">MATEMATIK</div>
+                                <div class="text-[18pt] font-bold tracking-wide uppercase">TAHUN 6</div>
+                                <div class="text-[14pt] font-bold pt-1">(1 JAM 15 MINIT)</div>
+                            </div>
+                        </div>
+
+                        <!-- Garis Pemisah Tengah -->
+                        <div class="w-3/4 mx-auto border-b border-black my-6"></div>
+
+                        <!-- Kotak Maklumat Murid -->
+                        <div class="max-w-lg mx-auto border-2 border-black px-6 py-4 my-6 space-y-4 text-[13pt]">
+                            <div class="flex items-end gap-2">
+                                <span class="font-bold w-20 shrink-0">Nama</span>
+                                <span class="font-bold">:</span>
+                                <div class="flex-1 border-b border-dotted border-black h-5"></div>
+                            </div>
+                            <div class="flex items-end gap-2">
+                                <span class="font-bold w-20 shrink-0">Kelas</span>
+                                <span class="font-bold">:</span>
+                                <div class="flex-1 border-b border-dotted border-black h-5"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bahagian Arahan Peperiksaan & Nota Kaki Muka Depan -->
+                    <div>
+                        <div class="border-2 border-black px-6 py-4 mb-6">
+                            <div class="text-center font-bold text-[13pt] underline mb-3 tracking-wide">
+                                JANGAN BUKA KERTAS SOALAN INI SEHINGGA DIBERITAHU
+                            </div>
+                            <ol class="list-decimal ml-6 space-y-2 text-[12.5pt] leading-relaxed">
+                                <li>Jawab semua soalan.</li>
+                                <li>Baca arahan di setiap bahagian dengan teliti.</li>
+                                <li>Jika anda hendak menukar jawapan, padamkan jawapan yang telah dibuat. Kemudian tuliskan jawapan yang baharu.</li>
+                            </ol>
+                        </div>
+
+                        <!-- Jadual Ringkasan Markah Untuk Kegunaan Pemeriksa (Kemasan Seimbang) -->
+                        <div class="max-w-md mx-auto mb-6">
+                            <table class="exam-table text-[11pt]">
+                                <thead>
+                                    <tr>
+                                        <th>Bahagian</th>
+                                        <th>Markah Penuh</th>
+                                        <th>Markah Diperoleh</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="font-bold">A</td>
+                                        <td>26</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">B</td>
+                                        <td>24</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr class="font-bold bg-slate-50">
+                                        <td>JUMLAH</td>
+                                        <td>50</td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="border-t-2 border-black pt-3 text-center font-bold text-[11.5pt]">
+                            KERTAS SOALAN INI MENGANDUNGI ${totalPrintedPages} HALAMAN BERCETAK TERMASUK KULIT.
+                        </div>
+
+                        <div class="flex justify-between items-center font-bold text-[12pt] mt-4">
+                            <span>SULIT</span>
+                            <span class="text-[11pt]">[Lihat sebelah</span>
+                            <span>SULIT</span>
+                        </div>
+                    </div>
+                </section>
+            `;
+
+            // Helper membina blok soalan Bahagian A dengan ruang pengiraan mencukupi
+            const renderItemA = (item, workHeightMm = 38) => `
+                <div class="flex justify-between items-start gap-3 mb-2">
+                    <div class="flex gap-2.5 flex-1 text-[12.5pt] leading-snug">
+                        <span class="font-bold w-6 shrink-0">${item.number}.</span>
+                        <div class="flex-1">
+                            ${item.htmlPrompt}
+                            <div class="work-space mt-2" style="min-height: ${workHeightMm}mm;"></div>
+                        </div>
+                    </div>
+                    <div class="font-bold text-[11.5pt] whitespace-nowrap pt-0.5">[${item.marks} markah]</div>
+                </div>
+            `;
+
+            // ------------------------------------------------------------------------
+            // HALAMAN 2: BAHAGIAN A (SOALAN 1, 2, 3)
+            // ------------------------------------------------------------------------
+            const page2 = `
+                <section class="a4-sheet animate-paper" id="page-2">
+                    <div>
+                        ${buildHeaderHTML(2)}
+                        <div class="text-center font-bold text-[13.5pt] mb-1">
+                            BAHAGIAN A<br>[26 MARKAH]
+                        </div>
+                        <div class="italic text-[12pt] mb-4 border-b border-black pb-1.5">
+                            Jawab semua soalan.
+                        </div>
+                        <div class="space-y-3">
+                            ${renderItemA(A[0], 34)}
+                            ${renderItemA(A[1], 40)}
+                            ${renderItemA(A[2], 40)}
+                        </div>
+                    </div>
+                    ${buildFooterHTML()}
+                </section>
+            `;
+
+            // ------------------------------------------------------------------------
+            // HALAMAN 3: BAHAGIAN A (SOALAN 4, 5, 6, 7)
+            // ------------------------------------------------------------------------
+            const page3 = `
+                <section class="a4-sheet animate-paper" id="page-3">
+                    <div>
+                        ${buildHeaderHTML(3)}
+                        <div class="space-y-3 mt-1">
+                            ${renderItemA(A[3], 38)}
+                            ${renderItemA(A[4], 38)}
+                            ${renderItemA(A[5], 38)}
+                            ${renderItemA(A[6], 38)}
+                        </div>
+                    </div>
+                    ${buildFooterHTML()}
+                </section>
+            `;
+
+            // ------------------------------------------------------------------------
+            // HALAMAN 4: BAHAGIAN A (SOALAN 8, 9, 10, 11)
+            // ------------------------------------------------------------------------
+            const page4 = `
+                <section class="a4-sheet animate-paper" id="page-4">
+                    <div>
+                        ${buildHeaderHTML(4)}
+                        <div class="space-y-3 mt-1">
+                            ${renderItemA(A[7], 38)}
+                            ${renderItemA(A[8], 38)}
+                            ${renderItemA(A[9], 38)}
+                            ${renderItemA(A[10], 38)}
+                        </div>
+                    </div>
+                    ${buildFooterHTML()}
+                </section>
+            `;
+
+            // ------------------------------------------------------------------------
+            // HALAMAN 5: BAHAGIAN A (SOALAN 12, 13)
+            // ------------------------------------------------------------------------
+            const page5 = `
+                <section class="a4-sheet animate-paper" id="page-5">
+                    <div>
+                        ${buildHeaderHTML(5)}
+                        <div class="space-y-5 mt-2">
+                            ${renderItemA(A[11], 55)}
+                            ${renderItemA(A[12], 65)}
+                        </div>
+                        <div class="text-center font-bold text-[11pt] mt-6 tracking-wider">
+                            — TAMAT BAHAGIAN A —
+                        </div>
+                    </div>
+                    ${buildFooterHTML()}
+                </section>
+            `;
+
+            // Helper membina sub-soalan Bahagian B
+            const renderSubB = (mainNum, sub, showMainNum, workHeightMm = 48) => `
+                <div class="flex justify-between items-start gap-3 mb-3">
+                    <div class="flex gap-2 flex-1 text-[12.5pt] leading-snug">
+                        <span class="font-bold w-6 shrink-0">${showMainNum ? `${mainNum}.` : ''}</span>
+                        <span class="font-bold w-7 shrink-0">${sub.label}</span>
+                        <div class="flex-1">
+                            ${sub.htmlPrompt}
+                            <div class="work-space mt-2" style="min-height: ${workHeightMm}mm;"></div>
+                        </div>
+                    </div>
+                    <div class="font-bold text-[11.5pt] whitespace-nowrap pt-0.5">[${sub.marks} markah]</div>
+                </div>
+            `;
+
+            // ------------------------------------------------------------------------
+            // HALAMAN 6: BAHAGIAN B (SOALAN 1(a), 1(b))
+            // ------------------------------------------------------------------------
+            const page6 = `
+                <section class="a4-sheet animate-paper" id="page-6">
+                    <div>
+                        ${buildHeaderHTML(6)}
+                        <div class="text-center font-bold text-[13.5pt] mb-1">
+                            BAHAGIAN B<br>[24 MARKAH]
+                        </div>
+                        <div class="italic text-[12pt] mb-3 border-b border-black pb-1.5">
+                            Jawab semua soalan.
+                        </div>
+                        <div class="space-y-3">
+                            ${renderSubB(1, B[0].parts[0], true, 42)}
+                            ${renderSubB(1, B[0].parts[1], false, 44)}
+                        </div>
+                    </div>
+                    ${buildFooterHTML()}
+                </section>
+            `;
+
+            // ------------------------------------------------------------------------
+            // HALAMAN 7: BAHAGIAN B (SOALAN 1(c), 1(d))
+            // ------------------------------------------------------------------------
+            const page7 = `
+                <section class="a4-sheet animate-paper" id="page-7">
+                    <div>
+                        ${buildHeaderHTML(7)}
+                        <div class="space-y-5 mt-2">
+                            ${renderSubB(1, B[0].parts[2], false, 68)}
+                            ${renderSubB(1, B[0].parts[3], false, 68)}
+                        </div>
+                    </div>
+                    ${buildFooterHTML()}
+                </section>
+            `;
+
+            // ------------------------------------------------------------------------
+            // HALAMAN 8: BAHAGIAN B (SOALAN 2(a), 2(b))
+            // ------------------------------------------------------------------------
+            const page8 = `
+                <section class="a4-sheet animate-paper" id="page-8">
+                    <div>
+                        ${buildHeaderHTML(8)}
+                        <div class="space-y-3 mt-1">
+                            ${renderSubB(2, B[1].parts[0], true, 44)}
+                            ${renderSubB(2, B[1].parts[1], false, 48)}
+                        </div>
+                    </div>
+                    ${buildFooterHTML()}
+                </section>
+            `;
+
+            // ------------------------------------------------------------------------
+            // HALAMAN 9: BAHAGIAN B (SOALAN 2(c), 2(d))
+            // ------------------------------------------------------------------------
+            const page9 = `
+                <section class="a4-sheet animate-paper" id="page-9">
+                    <div>
+                        ${buildHeaderHTML(9)}
+                        <div class="space-y-4 mt-2">
+                            ${renderSubB(2, B[1].parts[2], false, 56)}
+                            ${renderSubB(2, B[1].parts[3], false, 62)}
+                        </div>
+                        <div class="text-center font-bold text-[12pt] mt-6 tracking-wider">
+                            KERTAS SOALAN TAMAT
+                        </div>
+                    </div>
+                    ${buildFooterHTML()}
+                </section>
+            `;
+
+            // ------------------------------------------------------------------------
+            // HALAMAN 10 & 11: SKEMA JAWAPAN & LANGKAH PENGIRAAN LENGKAP (AKHIR MUKA SURAT)
+            // ------------------------------------------------------------------------
+            const schemePage10 = `
+                <section class="a4-sheet-scheme animate-paper scheme-section ${isSchemeVisible ? '' : 'hidden'}" id="page-10">
+                    <div>
+                        ${buildHeaderHTML(10)}
+                        <div class="text-center border-2 border-black py-2 px-4 mb-3 bg-slate-50">
+                            <div class="font-bold text-[14pt] uppercase tracking-wide">SKEMA JAWAPAN &amp; LANGKAH PENGIRAAN LENGKAP</div>
+                            <div class="text-[10.5pt] font-bold">UJIAN PERTENGAHAN SESI AKADEMIK • MATEMATIK TAHUN 6 (KSSR) • ${examSet.setCode}</div>
+                        </div>
+
+                        <div class="font-bold text-[12pt] underline mb-2">BAHAGIAN A [26 MARKAH]</div>
+                        <table class="exam-table text-left text-[10pt]">
+                            <thead>
+                                <tr>
+                                    <th class="w-10">No.</th>
+                                    <th class="w-44">Kemahiran KSSR</th>
+                                    <th>Langkah Pengiraan Terperinci</th>
+                                    <th class="w-32">Jawapan Akhir</th>
+                                    <th class="w-16">Markah</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${A.map(q => `
+                                    <tr>
+                                        <td class="font-bold text-center">${q.number}</td>
+                                        <td class="text-left text-[9pt] leading-tight">${q.topicName}</td>
+                                        <td class="text-left leading-snug">
+                                            ${q.steps.map(st => `<div>• ${st}</div>`).join('')}
+                                        </td>
+                                        <td class="font-bold text-center bg-emerald-50/60">${q.answerFinal}</td>
+                                        <td class="font-bold text-center">${q.marks}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    ${buildFooterHTML()}
+                </section>
+            `;
+
+            const schemePage11 = `
+                <section class="a4-sheet-scheme animate-paper scheme-section ${isSchemeVisible ? '' : 'hidden'}" id="page-11">
+                    <div>
+                        ${buildHeaderHTML(11)}
+                        <div class="font-bold text-[12pt] underline mb-2">BAHAGIAN B [24 MARKAH]</div>
+                        <table class="exam-table text-left text-[10.5pt]">
+                            <thead>
+                                <tr>
+                                    <th class="w-14">Soalan</th>
+                                    <th class="w-44">Kemahiran KSSR</th>
+                                    <th>Langkah Pengiraan &amp; Pemarkahan</th>
+                                    <th class="w-36">Jawapan Akhir</th>
+                                    <th class="w-16">Markah</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${B.map(mainQ => mainQ.parts.map(p => `
+                                    <tr>
+                                        <td class="font-bold text-center">${mainQ.number}${p.label}</td>
+                                        <td class="text-left text-[9.5pt] leading-tight">${p.topicName}</td>
+                                        <td class="text-left leading-relaxed">
+                                            ${p.steps.map(st => `<div>• ${st}</div>`).join('')}
+                                        </td>
+                                        <td class="font-bold text-center bg-emerald-50/60">${p.answerFinal}</td>
+                                        <td class="font-bold text-center">${p.marks}</td>
+                                    </tr>
+                                `).join('')).join('')}
+                            </tbody>
+                        </table>
+
+                        <!-- Ringkasan Kawalan Kualiti Guru -->
+                        <div class="mt-4 border border-black p-3 bg-slate-50 text-[10pt]">
+                            <div class="font-bold mb-1">PENGESAHAN KAWALAN KUALITI AUTOMATIK:</div>
+                            <div class="grid grid-cols-2 gap-1">
+                                <div>• Jumlah Soalan Bahagian A: 13 soalan (26 markah)</div>
+                                <div>• Jumlah Soalan Bahagian B: 2 soalan berstruktur (24 markah)</div>
+                                <div>• Penapis Konsep Unik: 21 kemahiran berbeza tanpa pertindihan</div>
+                                <div>• Jumlah Markah Keseluruhan: 50 / 50 markah</div>
+                            </div>
+                        </div>
+                    </div>
+                    ${buildFooterHTML()}
+                </section>
+            `;
+
+            container.innerHTML = page1 + page2 + page3 + page4 + page5 + page6 + page7 + page8 + page9 + schemePage10 + schemePage11;
+            adjustResponsivePaperScale();
+        }
+
+        // ============================================================================
+        // FUNGSI KAWALAN ANTARAMUKA, SKALA RESPONSIF & EKSPORT PDF
+        // ============================================================================
+
+        function showToast(message) {
+            const toast = document.getElementById('toastNotification');
+            const msgEl = document.getElementById('toastMessage');
+            msgEl.textContent = message;
+            toast.classList.remove('hidden');
+            clearTimeout(window._toastTimer);
+            window._toastTimer = setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3400);
+        }
+
+        function generateNewPaperSet(incrementCounter = true) {
+            if (incrementCounter) {
+                currentSetCounter++;
+            }
+            const code = `SET-UPSA-${String(currentSetCounter).padStart(3, '0')}`;
+            document.getElementById('setCodeDisplay').textContent = code;
+
+            // Jana 13 soalan Bahagian A (mengikut urutan standard kemahiran KSSR dari nombor bulat ke penyelesaian masalah)
+            const bahagianA = bahagianAGenerators.map((genFn, idx) => {
+                const q = genFn();
+                return {
+                    number: idx + 1,
+                    ...q
+                };
+            });
+
+            // Jana 2 soalan utama Bahagian B
+            const bahagianB = generateBahagianB();
+
+            const candidateSet = {
+                setCode: code,
+                bahagianA,
+                bahagianB
+            };
+
+            // Jalankan kawalan kualiti automatik sebelum dipaparkan
+            const qa = runQualityControl(candidateSet);
+            const statusText = document.getElementById('qaStatusText');
+
+            if (qa.passed) {
+                currentExamData = candidateSet;
+                statusText.textContent = `Semakan Kualiti: Lulus (${qa.uniqueSkillsCount} Kemahiran Unik • ${qa.totalMarks}/50 Markah)`;
+                renderExamPaper(currentExamData);
+                showToast(`Set soalan baharu (${code}) berjaya dijana dan lulus semakan kualiti!`);
+            } else {
+                // Jika berlaku sebarang anomali, jana semula secara automatik
+                console.warn('Mengulang penjanaan kerana semakan kualiti:', qa.issues);
+                generateNewPaperSet(false);
+            }
+        }
+
+        function toggleAnswerScheme() {
+            isSchemeVisible = !isSchemeVisible;
+            const btnText = document.getElementById('btnSchemeText');
+            btnText.textContent = isSchemeVisible ? 'SEMBUNYI SKEMA JAWAPAN' : 'PAPAR SKEMA JAWAPAN';
+            if (currentExamData) {
+                renderExamPaper(currentExamData);
+                if (isSchemeVisible) {
+                    scrollToScheme();
+                }
+            }
+        }
+
+        function scrollToScheme() {
+            if (!isSchemeVisible) {
+                isSchemeVisible = true;
+                document.getElementById('btnSchemeText').textContent = 'SEMBUNYI SKEMA JAWAPAN';
+                renderExamPaper(currentExamData);
+            }
+            const schemeEl = document.getElementById('page-10');
+            if (schemeEl) {
+                schemeEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function togglePdfDropdown() {
+            const dropdown = document.getElementById('pdfDropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        // Tutup menu dropdown PDF jika klik di luar kawasan
+        document.addEventListener('click', function (e) {
+            const menuBtn = document.getElementById('btnDownloadMenu');
+            const dropdown = document.getElementById('pdfDropdown');
+            if (menuBtn && dropdown && !menuBtn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        async function downloadPdfOption(mode) {
+            document.getElementById('pdfDropdown').classList.add('hidden');
+
+            if (typeof html2pdf === 'undefined') {
+                showToast('Membuka dialog cetakan A4 untuk simpan sebagai PDF...');
+                window.print();
+                return;
+            }
+
+            const code = currentExamData ? currentExamData.setCode : 'UPSA-MT6';
+            let filename = `${code}_Matematik_Tahun6_Lengkap.pdf`;
+
+            // Sediakan klon sementara untuk cetakan PDF yang tepat tanpa mengubah paparan semasa
+            const tempWrapper = document.createElement('div');
+            tempWrapper.className = 'exam-font';
+            tempWrapper.style.width = '210mm';
+            tempWrapper.style.background = '#ffffff';
+
+            const allPages = document.querySelectorAll('#examPaperContainer > section');
+            allPages.forEach((sec) => {
+                const isScheme = sec.classList.contains('scheme-section');
+                if (mode === 'questions' && isScheme) return;
+                if (mode === 'scheme' && !isScheme) return;
+
+                const clone = sec.cloneNode(true);
+                clone.classList.remove('hidden');
+                clone.style.margin = '0';
+                clone.style.boxShadow = 'none';
+                // Buang garis putus-putus skrin pada ruang kerja untuk cetakan bersih
+                clone.querySelectorAll('.work-space').forEach(ws => {
+                    ws.style.borderBottom = 'none';
+                });
+                tempWrapper.appendChild(clone);
+            });
+
+            if (mode === 'questions') {
+                filename = `${code}_Matematik_Tahun6_Kertas_Soalan.pdf`;
+            } else if (mode === 'scheme') {
+                filename = `${code}_Matematik_Tahun6_Skema_Jawapan.pdf`;
+            }
+
+            showToast('Sedang menjana fail PDF format A4, sila tunggu sebentar...');
+
+            const opt = {
+                margin: 0,
+                filename: filename,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['css', 'legacy'] }
+            };
+
+            try {
+                await html2pdf().set(opt).from(tempWrapper).save();
+                showToast(`Fail ${filename} berjaya dimuat turun!`);
+            } catch (err) {
+                console.error('Ralat menjana PDF:', err);
+                showToast('Sila gunakan tetingkap cetakan dan pilih "Save as PDF".');
+                window.print();
+            }
+        }
+
+        // Menyelaraskan skala paparan kertas A4 pada skrin mudah alih supaya tidak terpotong
+        function adjustResponsivePaperScale() {
+            const wrapper = document.getElementById('paperScaleWrapper');
+            if (!wrapper) return;
+            const viewportWidth = window.innerWidth;
+            const a4PxWidth = 794; // ~210mm pada 96dpi
+            if (viewportWidth < 830) {
+                const scale = Math.max(0.42, (viewportWidth - 20) / a4PxWidth);
+                wrapper.style.transform = `scale(${scale})`;
+                wrapper.style.width = `${a4PxWidth}px`;
+            } else {
+                wrapper.style.transform = 'none';
+                wrapper.style.width = '100%';
+            }
+        }
+
+        window.addEventListener('resize', adjustResponsivePaperScale);
+
+        // Mulakan penjanaan set pertama apabila halaman dimuatkan sepenuhnya
+        window.onload = function () {
+            document.getElementById('btnSchemeText').textContent = 'SEMBUNYI SKEMA JAWAPAN';
+            generateNewPaperSet(false);
+        };
+    </script>
+</body>
+</html>
